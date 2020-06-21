@@ -1,4 +1,4 @@
-#![no_std] // can't link against libc
+#![no_std]
 #![no_main] // don't use regular entry point chain (crt0, start)
 
 use core::panic::PanicInfo;
@@ -6,7 +6,7 @@ use core::panic::PanicInfo;
 mod vga;
 mod macros;
 
-#[no_mangle]
+#[no_mangle] // disable compiler name mangling for _start
 pub extern "C" fn _start() -> ! {
     println!("Hello world");
     loop {}

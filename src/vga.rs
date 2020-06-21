@@ -8,7 +8,7 @@ use spin::Mutex;
 #[allow(dead_code)]
 #[repr(u8)]
 #[derive(Debug, Clone, Copy)] // enable copy-semantics
-pub enum Col {
+enum Col {
     Black = 0,
     Blue = 1,
     Green = 2,
@@ -45,6 +45,12 @@ struct VgaPrintableChar {
     color_code: u8,
 }
 
+/*
+ * Explanation for volatile usage:
+ * Compiler doesn't know anything about the existence
+ * of a vga buffer at 0xb8000, it can optimise it away
+ * as dead code.
+ */
 #[repr(transparent)]
 struct StdBuffer {
     buf: [[Volatile<VgaPrintableChar>; BUF_WIDTH]; BUF_HEIGHT],
