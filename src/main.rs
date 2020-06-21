@@ -4,14 +4,16 @@
 use core::panic::PanicInfo;
 
 mod vga;
+mod macros;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    vga::print_something();
+    println!("Hello world");
     loop {}
 }
 
 #[panic_handler]
-fn panic_kern(_info: &PanicInfo) -> ! {
+fn panic_kern(err: &PanicInfo) -> ! {
+    println!("{}", err);
     loop {}
 }

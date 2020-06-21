@@ -2,6 +2,8 @@
 
 use volatile::Volatile;
 use core::fmt;
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 #[allow(dead_code)]
 #[repr(u8)]
@@ -48,7 +50,7 @@ struct StdBuffer {
     buf: [[Volatile<VgaPrintableChar>; BUF_WIDTH]; BUF_HEIGHT],
 }
 
-struct VgaWriter {
+pub struct VgaWriter {
     col: usize,
     row: usize,
     vga_buf: &'static mut StdBuffer,
@@ -61,19 +63,21 @@ impl VgaWriter {
         }
         if char_value == b'\n' {
             self.row += 1;
+            self.col = 0;
         }
         else {
             self.vga_buf.buf[self.row][self.col].write(VgaPrintableChar {char_value, color_code});
             self.col += 1;
             if self.col >= BUF_WIDTH {
-                self.col %= BUF_WIDTH;
+                self.col = 0;
                 self.row += 1;
             }
         }
     }
 
-    // reserving extra space for color_code for referring to default
-    pub fn write_str(&mut self, ascii_string: &str, color_code: u8) {
+    // reserving extra space for color_code for referring to default.
+    // make write_str accessible through core::fmt:Write trait only.
+    fn _write_str(&mut self, ascii_string: &str, color_code: u8) {
         for char_value in ascii_string.bytes() {
             match char_value {
                 0x20..=0x7e | b'\n' => self.write_char(char_value, color_code),
@@ -83,7 +87,7 @@ impl VgaWriter {
         }
     }
 
-    pub fn new_line(&mut self) {
+    fn new_line(&mut self) {
         for i in 0..BUF_HEIGHT-1 {
             for j in 0..BUF_WIDTH {
                 let chr = self.vga_buf.buf[i+1][j].read();
@@ -112,23 +116,26 @@ impl VgaWriter {
 
 impl fmt::Write for VgaWriter {
     fn write_str(&mut self, ascii_string: &str) -> fmt::Result {
-        self.write_str(ascii_string, DEF_COLOR);
+        self._write_str(ascii_string, DEF_COLOR);
         Ok(())
     }
 }
 
+// static writer
+lazy_static! {
+    // acquire lock before writing
+    pub static ref global_vga_writer: Mutex<VgaWriter> =
+        Mutex::new(VgaWriter {
+                col: 0, // initialise to 0, 0
+                row: 0,
+                vga_buf: unsafe { &mut *(0xb8000 as *mut StdBuffer) },
+            }
+        );
+}
 
-pub fn print_something() {
+// static writer functions
+// meant to be accessed through macros
+pub fn _write(args: fmt::Arguments) {
     use core::fmt::Write;
-    let mut writer = VgaWriter {
-        col: 0,
-        row: 0,
-        vga_buf: unsafe { &mut *(0xb8000 as *mut StdBuffer) },
-    };
-
-    writer.write_char(b'H', DEF_COLOR);
-    writer.write_str("ello! ", DEF_COLOR);
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+    global_vga_writer.lock().write_fmt(args).unwrap();
 }
