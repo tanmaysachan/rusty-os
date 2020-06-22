@@ -1,16 +1,17 @@
 #![no_std]
 #![no_main] // don't use regular entry point chain (crt0, start)
 
+use rusty_os;
+use rusty_os::println;
 use core::panic::PanicInfo;
-
-mod vga;
-mod macros;
-mod interrupts;
-mod utils;
 
 #[no_mangle] // disable compiler name mangling for _start
 pub extern "C" fn _start() -> ! {
-    println!("Hello world");
+    rusty_os::init();
+    println!("hello world!");
+    // rekt here
+    rusty_os::rnd_test();
+    
     loop {}
 }
 

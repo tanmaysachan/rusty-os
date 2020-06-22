@@ -6,6 +6,7 @@ use x86_64::structures::gdt;
 use x86_64::PrivilegeLevel;
 
 use crate::utils::bitops;
+use crate::println;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Options(u16); // 16 bit operation field
@@ -100,12 +101,15 @@ impl Idt {
     pub fn set_handler_fn(&mut self, entry_no: u8, handler_fn: HandlerFn) {
         if entry_no < 16 {
             // cs is the code segment
+            println!("Getting here");
             self.0[entry_no as usize] = Interrupt::new(segmentation::cs(), handler_fn);
         }
         // ignore call if not valid
     }
 
     // interface to change interrupt options
+    // TODO: borrow of packed field to be phased out,
+    // use options struct as an argument instead
     pub fn modify_int_options(&mut self, entry_no: u8) -> &mut Options {
         // TODO: dont know how to handle error properly,
         // can't restrict out of bound access, std::Option
