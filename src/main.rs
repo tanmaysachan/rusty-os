@@ -5,6 +5,8 @@ use core::panic::PanicInfo;
 
 mod vga;
 mod macros;
+mod interrupts;
+mod utils;
 
 #[no_mangle] // disable compiler name mangling for _start
 pub extern "C" fn _start() -> ! {
