@@ -1,54 +1,63 @@
+// my implementation of an IDT
+
+// https://wiki.osdev.org/Interrupt_Descriptor_Table
 use x86_64::instructions::segmentation;
 use x86_64::structures::gdt::SegmentSelector;
 use x86_64::PrivilegeLevel;
-use bit_field::BitField;
+
+use crate::utils::bitops;
+
+#[derive(Debug, Clone, Copy)]
+pub struct Options(u16); // 16 bit operation field
 
 #[repr(C, packed)]
 #[derive(Debug, Clone, Copy)]
-pub struct Entry {
-    pointer_low: u16,
+pub struct Interrupt {
+    handler_pointer_lower: u16,
     gdt_selector: SegmentSelector,
-    options: EntryOptions,
-    pointer_middle: u16,
-    pointer_high: u32,
+    options: Options,
+    handler_pointer_middle: u16,
+    handler_pointer_high: u32,
     reserved: u32,
 }
 
-pub struct idt([Entry; 16]);
+pub struct idt([Interrupt; 16]);
 
-#[derive(Debug, Clone, Copy)]
-pub struct EntryOptions(u16);
-
-impl EntryOptions {
-    fn minimal() -> Self {
-        let mut options = 0;
-        options.set_bits(9..12, 0b111);
-        EntryOptions(options)
+impl Options{
+    fn initialise() -> Self {
+        let mut options: u16 = 0;
+        bitops::turn_on_range(&mut options, 9, 12);
+        bitops::turn_on(&mut options, 15); // set present
+        bitops::turn_off(&mut options, 8); // disable interrupts
+        Options(options)
     }
 
     fn new() -> Self {
-        let mut options = Self::minimal();
-        options.set_present(true).disable_interrupts(true);
+        let mut options = Self::initialise();
         options
     }
 
     pub fn set_present(&mut self, present: bool) -> &mut Self {
-        self.0.set_bit(15, present);
+        bitops::turn_on(&mut self.0, 15);
         self
     }
 
     pub fn disable_interrupts(&mut self, disable: bool) -> &mut Self {
-        self.0.set_bit(8, !disable);
+        if disable {
+            bitops::turn_off(&mut self.0, 8);
+        } else {
+            bitops::turn_on(&mut self.0, 8);
+        }
         self
     }
 
     pub fn set_privilege_level(&mut self, dpl: u16) -> &mut Self {
-        self.0.set_bits(13..15, dpl);
+        bitops::apply_mask(&mut self.0, 13, 15, dpl);
         self
     }
 
-    pub fn set_stack_index(&mut self, index: u16) -> &mut Self {
-        self.0.set_bits(0..3, index);
+    pub fn set_stack_index(&mut self, ind: u16) -> &mut Self {
+        bitops::apply_mask(&mut self.0, 0, 3, ind);
         self
     }
 }
