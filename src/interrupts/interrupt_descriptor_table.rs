@@ -35,8 +35,8 @@ impl Interrupt {
             handler_pointer_lower: addr as u16, // lower 16 bits
             gdt_selector: gdt_s,
             options: Options::initialise(),
-            handler_pointer_middle: (addr << 16) as u16, // middle 16 bits
-            handler_pointer_high: (addr << 32) as u32, // higher 32 bits
+            handler_pointer_middle: (addr >> 16) as u16, // middle 16 bits
+            handler_pointer_high: (addr >> 32) as u32, // higher 32 bits
             reserved: 0,
         }
     }
@@ -101,7 +101,6 @@ impl Idt {
     pub fn set_handler_fn(&mut self, entry_no: u8, handler_fn: HandlerFn) {
         if entry_no < 16 {
             // cs is the code segment
-            println!("Getting here");
             self.0[entry_no as usize] = Interrupt::new(segmentation::cs(), handler_fn);
         }
         // ignore call if not valid
