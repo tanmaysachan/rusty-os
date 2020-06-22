@@ -130,7 +130,7 @@ impl fmt::Write for VgaWriter {
 // static writer
 lazy_static! {
     // acquire lock before writing
-    pub static ref global_vga_writer: Mutex<VgaWriter> =
+    pub static ref GLOBAL_VGA_WRITER: Mutex<VgaWriter> =
         Mutex::new(VgaWriter {
                 col: 0, // initialise to 0, 0
                 row: 0,
@@ -143,5 +143,5 @@ lazy_static! {
 // meant to be accessed through macros
 pub fn _write(args: fmt::Arguments) {
     use core::fmt::Write;
-    global_vga_writer.lock().write_fmt(args).unwrap();
+    GLOBAL_VGA_WRITER.lock().write_fmt(args).unwrap();
 }
