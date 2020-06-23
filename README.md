@@ -2,10 +2,13 @@
 * bootable rust binary
 * vga writer
 * an IDT
-* Fault handling(almost)
+* Fault handling
 
 ### Stuff left:
 (Everything else)
+Notably,
+* paging
+* frame allocations
 
 ### Steps to build:
 * Make sure you're on a nightly rust build.
