@@ -1,5 +1,8 @@
 #![feature(llvm_asm)]
+#![feature(naked_functions)]
+#![feature(core_intrinsics)]
 #![no_std]
+
 mod utils;
 mod interrupts;
 pub mod macros;
@@ -9,10 +12,13 @@ pub fn init() {
     interrupts::init_idt();
 }
 
+// random scratch test, for debugging,
+// till i write actual tests for this,
+// which i should
 pub fn rnd_test() {
     unsafe {
         llvm_asm!(
-            "mov dx, 0; div dx" ::: "ax", "dx" : "volatile", "intel"
+          "ud2"
         )
-    }
+    };
 }

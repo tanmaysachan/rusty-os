@@ -5,7 +5,24 @@ use lazy_static::lazy_static;
 lazy_static! {
     static ref IDT: interrupt_descriptor_table::Idt = {
         let mut idt = interrupt_descriptor_table::Idt::new();
-        idt.set_handler_fn(0, interrupt_handlers::divide_by_zero_handler);
+
+        // https://wiki.osdev.org/Exceptions
+        use crate::{ Handler, WErrHandler };
+        idt.set_handler_fn(0, Handler!("__hfn_divide_by_zero"));
+        idt.set_handler_fn(1, Handler!("__hfn_debug"));
+        idt.set_handler_fn(2, Handler!("__hfn_nmi"));
+        idt.set_handler_fn(3, Handler!("__hfn_breakpoint"));
+        idt.set_handler_fn(4, Handler!("__hfn_overflow"));
+        idt.set_handler_fn(5, Handler!("__hfn_bound_range_exceeded"));
+        idt.set_handler_fn(6, Handler!("__hfn_invalid_opcode"));
+        idt.set_handler_fn(7, Handler!("__hfn_device_not_available"));
+        idt.set_handler_fn(8, WErrHandler!("__hfn_df"));
+        idt.set_handler_fn(10, WErrHandler!("__hfn_invalid_tss"));
+        idt.set_handler_fn(11, WErrHandler!("__hfn_segment_not_present"));
+        idt.set_handler_fn(12, WErrHandler!("__hfn_ssf"));
+        idt.set_handler_fn(13, WErrHandler!("__hfn_gpf"));
+        idt.set_handler_fn(14, WErrHandler!("__hfn_pf"));
+
         idt
     };
 }

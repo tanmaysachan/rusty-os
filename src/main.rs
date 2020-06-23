@@ -1,5 +1,5 @@
 #![no_std]
-#![no_main] // don't use regular entry point chain (crt0, start)
+#![no_main]
 
 use rusty_os;
 use rusty_os::println;
@@ -9,9 +9,10 @@ use core::panic::PanicInfo;
 pub extern "C" fn _start() -> ! {
     rusty_os::init();
     println!("hello world!");
-    // rekt here
+
+    // task successfully failed
     rusty_os::rnd_test();
-    
+
     loop {}
 }
 
