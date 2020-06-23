@@ -34,8 +34,8 @@ macro_rules! Handler {
 
                 llvm_asm!(concat!(
                        "mov rdi, rsp;",
-                       "add rdi, 72",
-                       "call ", $name)
+                       "add rdi, 72;",
+                       "call ", $name, ";")
                       // concatting name till i figure out how macros work :(
                       :
                       :
@@ -93,7 +93,7 @@ macro_rules! WErrHandler {
                       :
                       : "intel", "volatile");
                 llvm_asm!(concat!(
-                       "mov rsi, [rsp + 9*8];",
+                       "mov rsi, [rsp + 72];",
                        "mov rdi, rsp;",
                        "add rdi, 80;",
                        "sub rsp, 8;",
