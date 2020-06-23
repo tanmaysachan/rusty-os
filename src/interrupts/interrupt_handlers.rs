@@ -18,13 +18,51 @@ macro_rules! Handler {
         extern "C" fn wrapper() -> ! {
             unsafe {
                 llvm_asm!(concat!(
+                       "push rax;",
+                       "push rcx;",
+                       "push rdx;",
+                       "push rsi;",
+                       "push rdi;",
+                       "push r8;",
+                       "push r9;",
+                       "push r10;",
+                       "push r11;")
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
+
+                llvm_asm!(concat!(
                        "mov rdi, rsp;",
-                       "sub rsp, 8;",
+                       "add rdi, 72",
                        "call ", $name)
                       // concatting name till i figure out how macros work :(
                       :
                       :
-                      : "rdi" : "intel");
+                      : "rdi"
+                      : "intel", "volatile");
+
+                llvm_asm!(concat!(
+                       "pop r11;",
+                       "pop r10;",
+                       "pop r8;",
+                       "pop r9;",
+                       "pop rdi;",
+                       "pop rsi;",
+                       "pop rdx;",
+                       "pop rcx;",
+                       "pop rax;")
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
+
+                llvm_asm!(concat!(
+                       "iretq;")
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
                 // force unreachability
                 core::intrinsics::unreachable();
             }
@@ -41,14 +79,52 @@ macro_rules! WErrHandler {
         extern "C" fn wrapper() -> ! {
             unsafe {
                 llvm_asm!(concat!(
-                       "pop rsi;", // we pop err code into rsi as second arg wrt C
+                       "push rax;",
+                       "push rcx;",
+                       "push rdx;",
+                       "push rsi;",
+                       "push rdi;",
+                       "push r8;",
+                       "push r9;",
+                       "push r10;",
+                       "push r11;")
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
+                llvm_asm!(concat!(
+                       "mov rsi, [rsp + 9*8];",
                        "mov rdi, rsp;",
+                       "add rdi, 80;",
                        "sub rsp, 8;",
-                       "call ", $name)
+                       "call ", $name, ";",
+                       "add rsp, 8")
                       // concatting name till i figure out how macros work :(
                       :
                       :
-                      : "rdi" : "intel");
+                      : "rdi", "rsi"
+                      : "intel");
+                llvm_asm!(concat!(
+                       "pop r11;",
+                       "pop r10;",
+                       "pop r8;",
+                       "pop r9;",
+                       "pop rdi;",
+                       "pop rsi;",
+                       "pop rdx;",
+                       "pop rcx;",
+                       "pop rax;")
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
+                llvm_asm!(concat!(
+                       "add rsp, 8;",
+                       "iretq;")
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
                 // force unreachability
                 core::intrinsics::unreachable();
             }
@@ -56,7 +132,6 @@ macro_rules! WErrHandler {
         wrapper
     }}
 }
-
 
 #[no_mangle]
 // TODO: failing if providing address with name mangling
