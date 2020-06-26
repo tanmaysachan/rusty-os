@@ -25,7 +25,8 @@ lazy_static! {
         idt.set_handler_fn(13, WErrHandler!("__hfn_gpf"));
         idt.set_handler_fn(14, WErrHandler!("__hfn_pf"));
 
-        idt.set_handler_fn(32, Handler!("__hfn_timer_interrupt"));
+        idt.set_handler_fn(32, Handler!("__hfn_timer_int"));
+        idt.set_handler_fn(33, Handler!("__hfn_keyboard_int"));
 
         idt
     };

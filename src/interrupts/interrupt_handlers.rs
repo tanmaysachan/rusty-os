@@ -135,17 +135,20 @@ macro_rules! WErrHandler {
     }}
 }
 
-// CPU EXCEPTIONS
-
-#[no_mangle]
 // TODO: failing if providing address with name mangling
 // not entirely sure if really required though
+
+/* CPU exceptions */
+
+// division by zero
+#[no_mangle]
 extern "C" fn
 __hfn_divide_by_zero(sframe: &ExceptionStackFrame) {
     println!("\nEXCEPTION: DIVIDE BY ZERO at {:#x}\n{:#?}",
              sframe.ip, sframe);
 }
 
+// debug
 #[no_mangle]
 extern "C" fn
 __hfn_debug(sframe: &ExceptionStackFrame) {
@@ -153,6 +156,7 @@ __hfn_debug(sframe: &ExceptionStackFrame) {
              sframe.ip, sframe);
 }
 
+// non maskable interrupt
 #[no_mangle]
 extern "C" fn
 __hfn_nmi(sframe: &ExceptionStackFrame) {
@@ -160,6 +164,7 @@ __hfn_nmi(sframe: &ExceptionStackFrame) {
              sframe.ip, sframe);
 }
 
+// breakpoint
 #[no_mangle]
 extern "C" fn
 __hfn_breakpoint(sframe: &ExceptionStackFrame) {
@@ -167,6 +172,7 @@ __hfn_breakpoint(sframe: &ExceptionStackFrame) {
              sframe.ip, sframe);
 }
 
+// overflow
 #[no_mangle]
 extern "C" fn
 __hfn_overflow(sframe: &ExceptionStackFrame) {
@@ -174,6 +180,7 @@ __hfn_overflow(sframe: &ExceptionStackFrame) {
              sframe.ip, sframe);
 }
 
+// bound range exceeded
 #[no_mangle]
 extern "C" fn
 __hfn_bound_range_exceeded(sframe: &ExceptionStackFrame) {
@@ -181,6 +188,7 @@ __hfn_bound_range_exceeded(sframe: &ExceptionStackFrame) {
              sframe.ip, sframe);
 }
 
+// invalid opcode
 #[no_mangle]
 extern "C" fn
 __hfn_invalid_opcode(sframe: &ExceptionStackFrame) {
@@ -188,6 +196,7 @@ __hfn_invalid_opcode(sframe: &ExceptionStackFrame) {
              sframe.ip, sframe);
 }
 
+// device not available
 #[no_mangle]
 extern "C" fn
 __hfn_device_not_available(sframe: &ExceptionStackFrame) {
@@ -195,6 +204,7 @@ __hfn_device_not_available(sframe: &ExceptionStackFrame) {
              sframe.ip, sframe);
 }
 
+// double fault
 #[no_mangle]
 extern "C" fn
 __hfn_df
@@ -203,6 +213,7 @@ __hfn_df
              ecode, sframe);
 }
 
+// invalid tss
 #[no_mangle]
 extern "C" fn
 __hfn_invalid_tss
@@ -211,6 +222,7 @@ __hfn_invalid_tss
              ecode, sframe);
 }
 
+// segment not present fault
 #[no_mangle]
 extern "C" fn
 __hfn_segment_not_present
@@ -219,6 +231,7 @@ __hfn_segment_not_present
              ecode, sframe);
 }
 
+// stack segment fault
 #[no_mangle]
 extern "C" fn
 __hfn_ssf
@@ -227,6 +240,7 @@ __hfn_ssf
              ecode, sframe);
 }
 
+// general protection fault
 #[no_mangle]
 extern "C" fn
 __hfn_gpf
@@ -235,6 +249,7 @@ __hfn_gpf
              ecode, sframe);
 }
 
+// page fault
 #[no_mangle]
 extern "C" fn
 __hfn_pf
@@ -243,11 +258,47 @@ __hfn_pf
              ecode, sframe);
 }
 
-// HARDWARE INTERRUPTS
+/* HARDWARE INTERRUPTS */
 
+// timer interrupt
 #[no_mangle]
-extern "C" fn __hfn_timer_interrupt (sframe: &ExceptionStackFrame) {
+extern "C" fn __hfn_timer_int (sframe: &ExceptionStackFrame) {
     unsafe {
         PICS.lock().notify_end_of_interrupt(32);
+    }
+}
+
+// keyboard interrupt
+#[no_mangle]
+extern "C" fn __hfn_keyboard_int (sframe: &ExceptionStackFrame) {
+
+    // read from PS/2 port
+    let mut port = ::x86_64::instructions::port::Port::new(0x60);
+    let scancode: u8 = unsafe { port.read() };
+
+    use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
+    use lazy_static::lazy_static;
+    use spin;
+
+    lazy_static! {
+        static ref KEYBOARD: spin::Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
+            spin::Mutex::new(Keyboard::new(layouts::Us104Key,
+                                           ScancodeSet1,
+                                           HandleControl::Ignore));
+    }
+
+    let mut keyboard = KEYBOARD.lock();
+
+    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+        if let Some(key) = keyboard.process_keyevent(key_event) {
+            match key {
+                DecodedKey::Unicode(character) => print!("{}", character),
+                DecodedKey::RawKey(key) => print!("{:?}", key),
+            }
+        }
+    }
+
+    unsafe {
+        PICS.lock().notify_end_of_interrupt(33);
     }
 }
