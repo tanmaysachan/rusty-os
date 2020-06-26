@@ -1,4 +1,6 @@
 use crate::println;
+use crate::print;
+use crate::interrupts::PICS;
 
 #[derive(Debug)]
 #[repr(C)]
@@ -245,5 +247,7 @@ __hfn_pf
 
 #[no_mangle]
 extern "C" fn __hfn_timer_interrupt (sframe: &ExceptionStackFrame) {
-    println!(".");
+    unsafe {
+        PICS.lock().notify_end_of_interrupt(32);
+    }
 }

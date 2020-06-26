@@ -144,5 +144,8 @@ lazy_static! {
 // meant to be accessed through macros
 pub fn _write(args: fmt::Arguments) {
     use core::fmt::Write;
-    GLOBAL_VGA_WRITER.lock().write_fmt(args).unwrap();
+
+    ::x86_64::instructions::interrupts::without_interrupts(|| {
+        GLOBAL_VGA_WRITER.lock().write_fmt(args).unwrap();
+    })
 }
