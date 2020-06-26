@@ -30,13 +30,12 @@ pub struct Interrupt {
 }
 
 impl Interrupt {
-    // declare a new interrupt
     fn new(gdt_s: gdt::SegmentSelector, handler_fn: HandlerFn) -> Self {
         let addr: u64 = handler_fn as u64;
         Interrupt {
             handler_pointer_lower: addr as u16, // lower 16 bits
             gdt_selector: gdt_s,
-            options: Options::initialise(),
+            options: Options::initialize(),
             handler_pointer_middle: (addr >> 16) as u16, // middle 16 bits
             handler_pointer_high: (addr >> 32) as u32, // higher 32 bits
             reserved: 0,
@@ -47,7 +46,7 @@ impl Interrupt {
         Interrupt {
             handler_pointer_lower: 0,
             gdt_selector: gdt::SegmentSelector::new(0, PrivilegeLevel::Ring3),
-            options: Options::initialise(),
+            options: Options::initialize(),
             handler_pointer_middle: 0,
             handler_pointer_high: 0,
             reserved: 0,
@@ -56,7 +55,7 @@ impl Interrupt {
 }
 
 impl Options{
-    fn initialise() -> Self {
+    fn initialize() -> Self {
         let mut options: u16 = 0;
         bitops::turn_on_range(&mut options, 9, 12);
         bitops::turn_on(&mut options, 15); // set present
