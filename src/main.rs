@@ -11,7 +11,11 @@ pub extern "C" fn _start() -> ! {
     println!("hello world!");
 
     // task successfully failed
-    rusty_os::rnd_test();
+    // rusty_os::rnd_test();
+    // unsafe{ x86_64::instructions::interrupts::int3(); };
+    // unsafe { *(0xdeadbeaf as *mut u64) = 42; }
+
+    println!("reched her");
 
     loop {}
 }

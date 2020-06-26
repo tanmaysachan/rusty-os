@@ -133,6 +133,8 @@ macro_rules! WErrHandler {
     }}
 }
 
+// CPU EXCEPTIONS
+
 #[no_mangle]
 // TODO: failing if providing address with name mangling
 // not entirely sure if really required though
@@ -237,4 +239,11 @@ __hfn_pf
 (sframe: &ExceptionStackFrame, ecode: u64) {
     println!("\nEXCEPTION: PAGE FAULT ecode: {:?}\n{:#?}",
              ecode, sframe);
+}
+
+// HARDWARE INTERRUPTS
+
+#[no_mangle]
+extern "C" fn __hfn_timer_interrupt (sframe: &ExceptionStackFrame) {
+    println!(".");
 }

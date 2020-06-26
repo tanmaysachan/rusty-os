@@ -66,6 +66,7 @@ impl VgaWriter {
     pub fn write_char(&mut self, char_value: u8, color_code: u8) { // rust char is 4 bytes, need u8
         if self.row >= BUF_HEIGHT {
             self.new_line();
+            self.row = BUF_HEIGHT-1;
         }
         if char_value == b'\n' {
             self.row += 1;

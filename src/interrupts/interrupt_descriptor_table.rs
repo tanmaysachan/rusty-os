@@ -16,6 +16,8 @@ pub struct Options(u16); // 16 bit operation field
 // with C calling conventions
 pub type HandlerFn = extern "C" fn() -> !;
 
+const IDT_SIZE: usize = 256;
+
 #[repr(C, packed)]
 #[derive(Debug, Clone, Copy)]
 pub struct Interrupt {
@@ -91,19 +93,15 @@ impl Options{
     }
 }
 
-pub struct Idt([Interrupt; 16]);
+pub struct Idt([Interrupt; IDT_SIZE]);
 
 impl Idt {
     pub fn new() -> Self {
-        Idt([Interrupt::new_empty_int(); 16])
+        Idt([Interrupt::new_empty_int(); IDT_SIZE])
     }
 
     pub fn set_handler_fn(&mut self, entry_no: u8, handler_fn: HandlerFn) {
-        if entry_no < 16 {
-            // cs is the code segment
-            self.0[entry_no as usize] = Interrupt::new(segmentation::cs(), handler_fn);
-        }
-        // ignore call if not valid
+        self.0[entry_no as usize] = Interrupt::new(segmentation::cs(), handler_fn);
     }
 
     // interface to change interrupt options

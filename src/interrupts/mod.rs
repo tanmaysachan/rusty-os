@@ -1,6 +1,8 @@
 mod interrupt_descriptor_table;
 mod interrupt_handlers;
 use lazy_static::lazy_static;
+use pic8259_simple::ChainedPics;
+use spin;
 
 lazy_static! {
     static ref IDT: interrupt_descriptor_table::Idt = {
@@ -23,6 +25,8 @@ lazy_static! {
         idt.set_handler_fn(13, WErrHandler!("__hfn_gpf"));
         idt.set_handler_fn(14, WErrHandler!("__hfn_pf"));
 
+        idt.set_handler_fn(32, Handler!("__hfn_timer_interrupt"));
+
         idt
     };
 }
@@ -30,3 +34,9 @@ lazy_static! {
 pub fn init_idt() {
     IDT.load();
 }
+
+pub const PIC_1_OFFSET: u8 = 32;
+pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
+
+pub static PICS: spin::Mutex<ChainedPics> =
+    spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
