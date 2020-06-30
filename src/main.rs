@@ -9,7 +9,6 @@ use x86_64;
 #[no_mangle] // disable compiler name mangling for _start
 pub extern "C" fn _start() -> ! {
     rusty_os::init();
-    println!("hello world!");
 
     loop {
         x86_64::instructions::hlt();
