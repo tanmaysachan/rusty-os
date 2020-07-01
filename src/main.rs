@@ -7,7 +7,7 @@ use core::panic::PanicInfo;
 use x86_64;
 
 #[no_mangle] // disable compiler name mangling for _start
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn _start(boot: &'static ::bootloader::BootInfo) -> ! {
     rusty_os::init();
 
     loop {

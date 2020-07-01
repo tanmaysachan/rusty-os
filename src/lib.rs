@@ -6,6 +6,7 @@
 
 mod utils;
 mod interrupts;
+mod memory;
 pub mod macros;
 pub mod vga; // TODO: somehow decrease visibility of VGA
 
