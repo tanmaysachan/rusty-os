@@ -278,7 +278,6 @@ extern "C" fn __hfn_keyboard_int (sframe: &ExceptionStackFrame) {
 
     use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
     use lazy_static::lazy_static;
-    use spin;
 
     lazy_static! {
         static ref KEYBOARD: spin::Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
