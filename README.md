@@ -3,12 +3,14 @@
 * vga writer
 * an IDT
 * Fault handling
+* paging
+* frame allocations
 
 ### Stuff left:
 (Everything else)
 Notably,
-* paging
-* frame allocations
+* heap allocations
+* processes
 
 ### Steps to build:
 * Make sure you're on a nightly rust build.
