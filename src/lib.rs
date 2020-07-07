@@ -4,9 +4,9 @@
 #![feature(abi_x86_interrupt)]
 #![no_std]
 
-mod utils;
+pub mod utils;
 mod interrupts;
-mod memory;
+pub mod memory;
 pub mod macros;
 pub mod vga; // TODO: somehow decrease visibility of VGA
 
