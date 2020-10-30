@@ -13,8 +13,7 @@ Notably,
 * processes
 
 ### Steps to build:
-* Make sure you're on a nightly rust build.
+* Make sure you're on atleast 2020-09-17 nightly rust build.
 * Install qemu.
-* Install xrun and xbuild for cargo for cross compilation.
-* `cargo xbuild` for building(cargo calls qemu as a subcommand).
-* `cargo xrun` for running.
+* `cargo install bootimage`
+* `cargo run`
